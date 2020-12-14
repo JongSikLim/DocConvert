@@ -16,7 +16,8 @@
     "jade": "~1.11.0",
     "morgan": "~1.9.1",
     "pdf2pic": "^2.1.2",
-    "ppt-png": "^0.7.1"
+    "ppt-png": "^0.7.1",
+    "unoconv": "^0.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
