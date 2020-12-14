@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import Converter from 'ppt-png';
+import unoconv from 'unoconv';
 
 const filePath = path.join(__dirname, '../assets/sample.ppt');
 const outputPath = path.join(__dirname, '../output/');
@@ -17,4 +18,13 @@ export default {
       },
     }).run();
   },
+  unoconvConvert: ()=>{
+	  unoconv.convert(
+		  filePath, 
+		  'pdf', 
+		  (err, result)=>{
+			  fs.writeFile('test.pdf',result);
+		  }
+	  );
+  }
 };
