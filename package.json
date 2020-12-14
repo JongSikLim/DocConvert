@@ -10,9 +10,12 @@
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "file-convert": "^1.0.3",
+    "gm": "^1.23.1",
     "http-errors": "~1.6.3",
+    "imagemagick": "^0.1.3",
     "jade": "~1.11.0",
     "morgan": "~1.9.1",
+    "pdf2pic": "^2.1.2",
     "ppt-png": "^0.7.1"
   },
   "devDependencies": {

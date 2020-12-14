@@ -1,4 +1,4 @@
-import document from 'file-convert';
+import { fromPath } from 'pdf2pic';
 import fs from 'fs';
 import path from 'path';
 
@@ -6,25 +6,23 @@ const filePath = path.join(__dirname, '../assets/sample.pptx');
 const sample = fs.readFileSync(filePath);
 
 const options = {
-  libreofficeBin: '/usr/bin/soffice',
-  sourceFile: filePath, // .ppt, .pptx, .odp, .key and .pdf
-  outputDir: '../output',
-  img: true,
-  imgExt: 'png', // Optional and default value png
-  reSize: 800, //  Optional and default Resize is 1200
-  density: 120, //  Optional and default density value is 120
+  density: 100,
+  saveFilename: 'untitled',
+  savePath: './images',
+  format: 'png',
+  width: 600,
+  height: 600,
 };
+
+const storeAsImage = fromPath('/path/to/pdf/sample.pdf', options);
+const pageToConvertAsImage = 1;
 
 export default {
   convert: (file, next) => {
-    document
-      .convert(options)
-      .then((res) => {
-        console.log('res: ', res);
-        next();
-      })
-      .catch((err) => {
-        console.log('err: ', err);
-      });
+    storeAsImage(pageToConvertAsImage).then((resolve) => {
+      console.log('Page 1 is now converted as image');
+
+      return resolve;
+    });
   },
 };
