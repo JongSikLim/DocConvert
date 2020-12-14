@@ -29,6 +29,11 @@ app.use('/pdf2', (req, res, next) => {
   res.send('hi');
 });
 
+app.use('/ppt', (req, res) => {
+	pptManager.convert();
+	res.send('hell');
+});
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
