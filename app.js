@@ -1,4 +1,5 @@
 import pptManager from './src/service/pptManager';
+import { convert, convertPpt } from './src/service/gmManager';
 import createError from 'http-errors';
 import express from 'express';
 import path from 'path';
@@ -22,6 +23,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
+app.use('/pdf2', (req, res, next) => {
+  convertPpt();
+  res.send('hi');
+});
 
 app.use('/ppt', (req, res, next) => {
   pptManager.convert(null, () => {
