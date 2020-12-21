@@ -1,23 +1,54 @@
-import fs from 'fs';
-import path from 'path';
+import path, { basename } from 'path';
 import Converter from 'ppt-png';
-import unoconv from 'unoconv';
 
 const filePath = path.join(__dirname, '../assets/sample.pptx');
 const outputPath = path.join(__dirname, '../output/');
+const libreOfficeClientDir = path.join(__dirname, '../../soffice.lnk');
+const pptOptionParameter =
+  '--headless --invisible --convert-to pdf *.pptx --outdir';
 
-console.log('hey', filePath);
+const docxOptionParameter =
+  '--headless --invisible --convert-to pdf *.docx --outdir';
+
+const xlsxOptionParameter =
+  '--headless --invisible --convert-to pdf *.xlsx --outdir';
 
 export default {
-  convert: () => {
+  convertPpt: () => {
     new Converter({
-	    files: [filePath],
-      output: outputPath,
-      invert: outputPath,
-	    logLevel: 2,
+      files: [filePath],
+      output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
+      logLevel: 2,
       deletePdfFile: true,
-      documentConvert: 'libreoffice --headless --invisible --convert-to pdf *.pptx --outdir',
-	    callback: function (data) {
+      fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
+      documentConvert: `${libreOfficeClientDir} ${pptOptionParameter}`,
+      callback: function (data) {
+        console.log(data.failed, data.success, data.files, data.time);
+      },
+    }).run();
+  },
+  convertDocx: () => {
+    new Converter({
+      files: [filePath],
+      output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
+      logLevel: 2,
+      deletePdfFile: true,
+      fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
+      documentConvert: `${libreOfficeClientDir} ${docxOptionParameter}`,
+      callback: function (data) {
+        console.log(data.failed, data.success, data.files, data.time);
+      },
+    }).run();
+  },
+  convertExcel: () => {
+    new Converter({
+      files: [filePath],
+      output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
+      logLevel: 2,
+      deletePdfFile: true,
+      fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
+      documentConvert: `${libreOfficeClientDir} ${xlsxOptionParameter}`,
+      callback: function (data) {
         console.log(data.failed, data.success, data.files, data.time);
       },
     }).run();
