@@ -1,7 +1,9 @@
+import { convert } from 'imagemagick';
 import path, { basename } from 'path';
 import Converter from 'ppt-png';
+import pdf2image from 'ppt-png/js/pdf2image';
 
-const filePath = path.join(__dirname, '../assets/sample.pptx');
+// const filePath = path.join(__dirname, '../assets/sample.pptx');
 const outputPath = path.join(__dirname, '../output/');
 const libreOfficeClientDir = path.join(__dirname, '../../soffice.lnk');
 const pptOptionParameter =
@@ -14,43 +16,86 @@ const xlsxOptionParameter =
   '--headless --invisible --convert-to pdf *.xlsx --outdir';
 
 export default {
-  convertPpt: () => {
-    new Converter({
-      files: [filePath],
-      output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
-      logLevel: 2,
-      deletePdfFile: true,
-      fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
-      documentConvert: `${libreOfficeClientDir} ${pptOptionParameter}`,
-      callback: function (data) {
-        console.log(data.failed, data.success, data.files, data.time);
-      },
-    }).run();
+  //SECTION PPT TO PNG
+  convertPpt: (filePath) => {
+    return new Promise((resolve, reject) => {
+      try {
+        new Converter({
+          files: [filePath],
+          output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
+          logLevel: 2,
+          deletePdfFile: true,
+          fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
+          documentConvert: `${libreOfficeClientDir} ${pptOptionParameter}`,
+          callback: function (data) {
+            resolve(data.success[0]);
+          },
+        }).run();
+      } catch (error) {
+        reject(error);
+      }
+    });
   },
-  convertDocx: () => {
-    new Converter({
-      files: [filePath],
-      output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
-      logLevel: 2,
-      deletePdfFile: true,
-      fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
-      documentConvert: `${libreOfficeClientDir} ${docxOptionParameter}`,
-      callback: function (data) {
-        console.log(data.failed, data.success, data.files, data.time);
-      },
-    }).run();
+  //SECTION DOCX TO PNG
+  convertDocx: (filePath) => {
+    return new Promise((resolve, reject) => {
+      try {
+        new Converter({
+          files: [filePath],
+          output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
+          logLevel: 2,
+          deletePdfFile: true,
+          fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
+          documentConvert: `${libreOfficeClientDir} ${docxOptionParameter}`,
+          callback: function (data) {
+            resolve(data.success[0]);
+          },
+        }).run();
+      } catch (error) {
+        reject(error);
+      }
+    });
   },
-  convertExcel: () => {
-    new Converter({
-      files: [filePath],
-      output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
-      logLevel: 2,
-      deletePdfFile: true,
-      fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
-      documentConvert: `${libreOfficeClientDir} ${xlsxOptionParameter}`,
-      callback: function (data) {
-        console.log(data.failed, data.success, data.files, data.time);
-      },
-    }).run();
+  //SECTION XLSX TO PNG
+  convertExcel: (filePath) => {
+    return new Promise((resolve, reject) => {
+      try {
+        new Converter({
+          files: [filePath],
+          output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
+          logLevel: 2,
+          deletePdfFile: true,
+          fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
+          documentConvert: `${libreOfficeClientDir} ${xlsxOptionParameter}`,
+          callback: function (data) {
+            resolve(data.success[0]);
+          },
+        }).run();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+  //SECTION PDF TO PNG
+  convertPdf: (filePath) => {
+    return new Promise((resolve, reject) => {
+      const converter = pdf2image.compileConverter({
+        outputFormat: `${outputPath}page_%d`,
+        outputType: 'png',
+        stripProfile: true,
+        density: '96',
+        width: null,
+        height: null,
+      });
+
+      converter
+        .convertPDF(filePath)
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
   },
 };

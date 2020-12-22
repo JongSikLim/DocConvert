@@ -1,5 +1,7 @@
 import * as AWS from 'aws-sdk';
 import fs from 'fs';
+import path from 'path';
+import { v4 } from 'uuid';
 
 const endpoint = new AWS.Endpoint('https://kr.object.ncloudstorage.com');
 const region = 'kr-standard';
@@ -24,30 +26,46 @@ const params = {
 };
 
 export default class StorageManager {
+  async uploadByFilePath(directory, filePath) {
+    let stream = readFile(filePath);
+    let fileName = path.basename(filePath);
+
+    // 폴더 생성
+    await S3.putObject({
+      Bucket: bucket_name,
+      Key: directory,
+    }).promise();
+
+    // 파일 생성
+    await S3.putObject({
+      Bucket: bucket_name,
+      Key: `${directory}${fileName}`,
+      ACL: 'public-read',
+      Body: stream,
+      // ContentLength: size,
+    }).promise();
+
+    return `${directory}${fileName}`;
+  }
   // SECTION UPLOAD
-  async upload(directory, fileName, buffer, size, successHandler) {
-    let object_name = directory;
+  async upload(directory, fileName, buffer, size) {
     // create folder
     await S3.putObject({
       Bucket: bucket_name,
       Key: directory,
     }).promise();
 
-    object_name = fileName;
     // upload file
     await S3.putObject({
       Bucket: bucket_name,
       Key: `${directory}${fileName}`,
       ACL: 'public-read',
-      // ACL을 지우면 전체공개가 되지 않습니다.
-      // Body: fs.createReadStream(local_file_path), //FIXME 메모리 스트림 테스트
       Body: buffer,
       ContentLength: size,
     })
       .promise()
       .then((res) => {
         console.log('res: ', res);
-        successHandler();
       })
       .catch((err) => {
         console.log('err: ', err);
@@ -148,4 +166,12 @@ export default class StorageManager {
       Key: object_name,
     }).promise();
   }
+
+  getDirectory() {
+    return `${v4()}/`;
+  }
 }
+
+const readFile = (path) => {
+  return fs.createReadStream(path);
+};

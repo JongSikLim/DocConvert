@@ -3,56 +3,19 @@ import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
-import StorageManager from './src/utils/ncp/storageManager';
-import fs from 'fs';
 import cors from 'cors';
 import multer from 'multer';
 import convertManager from './src/service/convertManager';
 
-let storage = new StorageManager();
-
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
-var app = express();
-
+// MULTER
 const upload = multer({
   storage: multer.memoryStorage(),
 });
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
-app.use('/upload', (req, res) => {
-  storage.upload(
-    'jsim/',
-    'newFile.txt',
-    fs.createReadStream(path.join('./src/assets/final.pdf'))
-  );
-  res.send('hi');
-});
-
-app.post('/convert', [[], upload.single('file')], (req, res) => {
-  convertManager.convert(req.file);
-  // const { originalname, buffer, size } = req.file;
-  // // let stream = Readable.from(buffer.toString());
-  // storage.upload('jsim/', originalname, buffer, size, () => {
-  //   res.status(200).json({
-  //     resultMessage: 'success',
-  //     resultCode: 200,
-  //   });
-  // });
-});
+var app = express();
 
 app.use(
   cors({
@@ -61,10 +24,43 @@ app.use(
       'http://127.0.0.1:5500',
       'http://localhost:3000',
     ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTION'],
     credential: true,
   })
 );
+
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
+
+app.use(logger('dev'));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// FILE SIZE CONFIG
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// app.disable('x-powered-by');
+
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+
+app.post('/convert', upload.single('upload'), async (req, res) => {
+  try {
+    let imagePathList = await convertManager.convert(req.file);
+
+    res.status(200).json({
+      resultData: imagePathList,
+      resultCode: 200,
+    });
+  } catch (error) {
+    res.status(500).json({
+      resultData: error,
+      resultCode: 200,
+    });
+  }
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

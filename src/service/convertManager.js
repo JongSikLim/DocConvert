@@ -9,7 +9,6 @@ export default {
   convert: async (file) => {
     const { originalname, buffer, size } = file;
     let format = extname(originalname);
-    let convertedFileList = [];
     let tempFilePath;
 
     try {
@@ -18,22 +17,40 @@ export default {
       throw error;
     }
 
+    /**
+     * [{
+     *  page : 페이지 값 (일반적인 상황에서 인덱스와 동치)
+     *  index : 순수한 인덱스
+     *  name : 파일위치
+     * },,,]
+     */
+    let outputImageList = [];
+
     switch (format) {
       case '.xlsx':
-        pptManager.convertExcel(tempFilePath);
+        outputImageList = await pptManager.convertExcel(tempFilePath);
         break;
       case '.pptx':
-        pptManager.convertPpt(tempFilePath);
+        outputImageList = await pptManager.convertPpt(tempFilePath);
         break;
       case '.docx':
-        pptManager.convertDocx(tempFilePath);
+        outputImageList = await pptManager.convertDocx(tempFilePath);
         break;
       case '.pdf':
+        outputImageList = await pptManager.convertPdf(tempFilePath);
         break;
     }
 
-    convertedFileList.forEach((file) => {
-      storage.upload();
+    let directory = storage.getDirectory();
+
+    let actions = outputImageList.map(async (file) => {
+      return await storage.uploadByFilePath(directory, file.name);
+    });
+
+    return new Promise((resolve, reject) => {
+      Promise.all(actions).then((res) => {
+        resolve(res);
+      });
     });
   },
 };
