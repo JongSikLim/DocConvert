@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import cors from 'cors';
 import multer from 'multer';
+import './env/env.js';
 import convertManager from './src/service/convertManager';
 
 var indexRouter = require('./routes/index');

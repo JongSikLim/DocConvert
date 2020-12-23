@@ -1,18 +1,28 @@
 import StorageManager from '../utils/ncp/storageManager';
-import path, { extname } from 'path';
+import path, { extname, basename } from 'path';
 import pptManager from './pptManager';
-import fs, { read } from 'fs';
+import fs from 'fs-extra';
 import { Readable } from 'stream';
+
 const storage = new StorageManager();
+const outputPath = path.join(__dirname, '../output/');
 
 export default {
+  /**
+   * @title convert
+   * @description 파일을 변환하여 네이버 클라우드 스토리지에 업로드 후 경로를 반환
+   * @param 업로드할 파일
+   * @return Success => 변환 후 업로드 성공한 파일의 스토리지 경로 배열로 반환
+   * @return Failure =>
+   */
   convert: async (file) => {
     const { originalname, buffer, size } = file;
-    let format = extname(originalname);
+    let format = extname(originalname).toLocaleLowerCase();
     let tempFilePath;
 
     try {
-      tempFilePath = await createTempFile(originalname, buffer); // SECTION 임시파일 생성
+      // SECTION 임시파일 생성
+      tempFilePath = await createTempFile(originalname, buffer);
     } catch (error) {
       throw error;
     }
@@ -39,22 +49,44 @@ export default {
       case '.pdf':
         outputImageList = await pptManager.convertPdf(tempFilePath);
         break;
+      case '.png':
+      case '.jpg':
+      case '.jpeg':
+      case '.gif':
+        outputImageList = [
+          {
+            page: 1,
+            index: 1,
+            name: tempFilePath,
+          },
+        ];
+        break;
     }
 
-    let directory = storage.getDirectory();
-
+    let directory = storage.getDirectory(); // uuid v4 기법으로 난문자 생성
     let actions = outputImageList.map(async (file) => {
       return await storage.uploadByFilePath(directory, file.name);
     });
 
     return new Promise((resolve, reject) => {
-      Promise.all(actions).then((res) => {
-        resolve(res);
-      });
+      Promise.all(actions)
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((err) => {
+          reject(err);
+        })
+        .finally(() => {
+          let convertedFileDirectory = `${outputPath}\\${basename(
+            tempFilePath
+          )}\\`;
+          deleteTempFile([convertedFileDirectory, tempFilePath]);
+        });
     });
   },
 };
 
+// 변환을 위한 임시 파일 생성
 async function createTempFile(filename, data) {
   return new Promise((resolve, reject) => {
     let sampleFilePath = path.join(__dirname, `../temp/${filename}`);
@@ -72,4 +104,11 @@ async function createTempFile(filename, data) {
     });
   });
 }
-async function checkType() {}
+
+// 파일 변환 및 업로드 이후 임시 파일 삭제
+const deleteTempFile = (deletePathList = []) => {
+  deletePathList.forEach((target) => {
+    fs.removeSync(target);
+    console.log('Deleted Temp File ', target);
+  });
+};

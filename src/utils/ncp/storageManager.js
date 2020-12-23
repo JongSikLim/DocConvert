@@ -2,11 +2,14 @@ import * as AWS from 'aws-sdk';
 import fs from 'fs';
 import path from 'path';
 import { v4 } from 'uuid';
+import Config from '../../../env/cloud.config';
 
-const endpoint = new AWS.Endpoint('https://kr.object.ncloudstorage.com');
-const region = 'kr-standard';
-const access_key = 'HtneH6MDWmURbCW57ij4';
-const secret_key = '09znmch5ENIzl5jROGUm4oFzoCqDKDLUhsKhj3ad';
+const { ACCESS_KEY, AWS_END_POINT, SECRET_KEY, REGION } = Config;
+
+const endpoint = new AWS.Endpoint(AWS_END_POINT);
+const region = REGION;
+const access_key = ACCESS_KEY;
+const secret_key = SECRET_KEY;
 
 const S3 = new AWS.S3({
   endpoint,
