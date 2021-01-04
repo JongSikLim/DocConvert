@@ -16,8 +16,10 @@ const xlsxOptionParameter =
   '--headless --invisible --convert-to pdf *.xlsx --outdir';
 
 export default {
-  //SECTION PPT TO PNG
-  convertPpt: (filePath) => {
+  //SECTION MS OFFCIE TO PNG (xlsx, pptx, docx)
+  convertOffice: (filePath, format) => {
+    let command = `--headless --invisible --convert-to pdf *${format} --outdir`;
+
     return new Promise((resolve, reject) => {
       try {
         new Converter({
@@ -26,47 +28,7 @@ export default {
           logLevel: 2,
           deletePdfFile: true,
           fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
-          documentConvert: `${libreOfficeClientDir} ${pptOptionParameter}`,
-          callback: function (data) {
-            resolve(data.success[0]);
-          },
-        }).run();
-      } catch (error) {
-        reject(error);
-      }
-    });
-  },
-  //SECTION DOCX TO PNG
-  convertDocx: (filePath) => {
-    return new Promise((resolve, reject) => {
-      try {
-        new Converter({
-          files: [filePath],
-          output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
-          logLevel: 2,
-          deletePdfFile: true,
-          fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
-          documentConvert: `${libreOfficeClientDir} ${docxOptionParameter}`,
-          callback: function (data) {
-            resolve(data.success[0]);
-          },
-        }).run();
-      } catch (error) {
-        reject(error);
-      }
-    });
-  },
-  //SECTION XLSX TO PNG
-  convertExcel: (filePath) => {
-    return new Promise((resolve, reject) => {
-      try {
-        new Converter({
-          files: [filePath],
-          output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
-          logLevel: 2,
-          deletePdfFile: true,
-          fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
-          documentConvert: `${libreOfficeClientDir} ${xlsxOptionParameter}`,
+          documentConvert: `${libreOfficeClientDir} ${command}`,
           callback: function (data) {
             resolve(data.success[0]);
           },

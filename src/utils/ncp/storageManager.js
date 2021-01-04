@@ -4,12 +4,13 @@ import path from 'path';
 import { v4 } from 'uuid';
 import Config from '../../../env/cloud.config';
 
-const { ACCESS_KEY, AWS_END_POINT, SECRET_KEY, REGION } = Config;
+const { ACCESS_KEY, AWS_END_POINT, SECRET_KEY, REGION, BUCKET_NAME } = Config;
 
 const endpoint = new AWS.Endpoint(AWS_END_POINT);
 const region = REGION;
 const access_key = ACCESS_KEY;
 const secret_key = SECRET_KEY;
+const bucket_name = BUCKET_NAME;
 
 const S3 = new AWS.S3({
   endpoint,
@@ -20,7 +21,6 @@ const S3 = new AWS.S3({
   },
 });
 
-const bucket_name = 'codebrewing';
 const MAX_KEYS = 300;
 
 const params = {
@@ -29,6 +29,15 @@ const params = {
 };
 
 export default class StorageManager {
+  // SECTION UPLOAD
+  /**
+   * @title uploadByFilePath
+   * @description 로컬의 파일 경로를 기반으로 파일을 읽어 S3에 저장
+   * @param directory 저장할 스토리지의 내부 경로
+   * @param filePath 현재 로컬에 저장된 파일의 위치
+   * @return Success => 파일 경로 반환
+   * @return Failure =>
+   */
   async uploadByFilePath(directory, filePath) {
     let stream = readFile(filePath);
     let fileName = path.basename(filePath);
@@ -50,7 +59,6 @@ export default class StorageManager {
 
     return `${directory}${fileName}`;
   }
-  // SECTION UPLOAD
   async upload(directory, fileName, buffer, size) {
     // create folder
     await S3.putObject({
@@ -175,6 +183,7 @@ export default class StorageManager {
   }
 }
 
+// 인자로 받은 경로의 파일 데이터를 읽어 스트림으로 반환
 const readFile = (path) => {
   return fs.createReadStream(path);
 };

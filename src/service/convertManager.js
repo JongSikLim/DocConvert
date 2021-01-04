@@ -1,17 +1,20 @@
-import StorageManager from '../utils/ncp/storageManager';
-import path, { extname, basename } from 'path';
-import pptManager from './pptManager';
 import fs from 'fs-extra';
+import path, { extname, basename } from 'path';
 import { Readable } from 'stream';
+import Converter from 'ppt-png';
+import pdf2image from 'ppt-png/js/pdf2image';
+
+import StorageManager from '../utils/ncp/storageManager';
 
 const storage = new StorageManager();
 const outputPath = path.join(__dirname, '../output/');
+const libreOfficeClientDir = path.join(__dirname, '../../soffice.lnk');
 
 export default {
   /**
    * @title convert
    * @description 파일을 변환하여 네이버 클라우드 스토리지에 업로드 후 경로를 반환
-   * @param 업로드할 파일
+   * @param file multer middleware 의해서 정의된 파일
    * @return Success => 변환 후 업로드 성공한 파일의 스토리지 경로 배열로 반환
    * @return Failure =>
    */
@@ -38,16 +41,12 @@ export default {
 
     switch (format) {
       case '.xlsx':
-        outputImageList = await pptManager.convertExcel(tempFilePath);
-        break;
       case '.pptx':
-        outputImageList = await pptManager.convertPpt(tempFilePath);
-        break;
       case '.docx':
-        outputImageList = await pptManager.convertDocx(tempFilePath);
+        outputImageList = await convertOffice(tempFilePath, format);
         break;
       case '.pdf':
-        outputImageList = await pptManager.convertPdf(tempFilePath);
+        outputImageList = await convertPdf(tempFilePath);
         break;
       case '.png':
       case '.jpg':
@@ -60,6 +59,8 @@ export default {
             name: tempFilePath,
           },
         ];
+        break;
+      default:
         break;
     }
 
@@ -110,5 +111,52 @@ const deleteTempFile = (deletePathList = []) => {
   deletePathList.forEach((target) => {
     fs.removeSync(target);
     console.log('Deleted Temp File ', target);
+  });
+};
+
+//SECTION MS OFFCIE TO PNG (xlsx, pptx, docx)
+const convertOffice = (filePath, format) => {
+  console.log('format: ', format);
+  let command = `--headless --invisible --convert-to pdf *${format} --outdir`;
+
+  return new Promise((resolve, reject) => {
+    try {
+      new Converter({
+        files: [filePath],
+        output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
+        logLevel: 2,
+        deletePdfFile: true,
+        fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
+        documentConvert: `${libreOfficeClientDir} ${command}`,
+        callback: function (data) {
+          resolve(data.success[0]);
+        },
+      }).run();
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+//SECTION PDF TO PNG
+const convertPdf = (filePath) => {
+  return new Promise((resolve, reject) => {
+    const converter = pdf2image.compileConverter({
+      outputFormat: `${outputPath}page_%d`,
+      outputType: 'png',
+      stripProfile: true,
+      density: '96',
+      width: null,
+      height: null,
+    });
+
+    converter
+      .convertPDF(filePath)
+      .then((res) => {
+        resolve(res);
+      })
+      .catch((err) => {
+        reject(err);
+      });
   });
 };
