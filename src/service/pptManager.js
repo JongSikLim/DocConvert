@@ -1,19 +1,9 @@
-import { convert } from 'imagemagick';
 import path, { basename } from 'path';
 import Converter from 'ppt-png';
 import pdf2image from 'ppt-png/js/pdf2image';
 
-// const filePath = path.join(__dirname, '../assets/sample.pptx');
 const outputPath = path.join(__dirname, '../output/');
 const libreOfficeClientDir = path.join(__dirname, '../../soffice.lnk');
-const pptOptionParameter =
-  '--headless --invisible --convert-to pdf *.pptx --outdir';
-
-const docxOptionParameter =
-  '--headless --invisible --convert-to pdf *.docx --outdir';
-
-const xlsxOptionParameter =
-  '--headless --invisible --convert-to pdf *.xlsx --outdir';
 
 export default {
   //SECTION MS OFFCIE TO PNG (xlsx, pptx, docx)
