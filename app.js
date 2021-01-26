@@ -47,7 +47,7 @@ app.disable('x-powered-by');
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-app.post('/convert', upload.single('upload'), async (req, res) => {
+app.post('/convert', upload.single('file'), async (req, res) => {
   try {
     let imagePathList = await convertManager.convert(req.file);
 
@@ -56,10 +56,18 @@ app.post('/convert', upload.single('upload'), async (req, res) => {
       resultCode: 200,
     });
   } catch (error) {
-    res.status(500).json({
-      resultData: error,
-      resultCode: 200,
-    });
+    console.log('error: ', error);
+    if (error.message === 'BAD_REQUEST') {
+      res.status(400).json({
+        resultData: error.message,
+        resultCode: 400,
+      });
+    } else {
+      res.status(500).json({
+        resultData: error,
+        resultCode: 500,
+      });
+    }
   }
 });
 

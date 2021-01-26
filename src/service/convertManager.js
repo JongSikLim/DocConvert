@@ -5,6 +5,7 @@ import Converter from 'ppt-png';
 import pdf2image from 'ppt-png/js/pdf2image';
 
 import StorageManager from '../utils/ncp/storageManager';
+import { BadRequest } from 'http-errors';
 
 const storage = new StorageManager();
 const outputPath = path.join(__dirname, '../output/');
@@ -61,7 +62,7 @@ export default {
         ];
         break;
       default:
-        break;
+        throw new BadRequest('BAD_REQUEST');
     }
 
     let directory = storage.getDirectory(); // uuid v4 기법으로 난문자 생성
