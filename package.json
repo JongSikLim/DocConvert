@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "cross-env NODE_ENV=prod nodemon --exec  babel-node ./bin/www",
-    "start:win": "cross-env NODE_ENV=development nodemon --exec  babel-node ./bin/www"
+    "start:win": "cross-env NODE_ENV=development nodemon --exec  babel-node ./bin/www",
+    "start:prod": "pm2 start pm2-start.json"
   },
   "dependencies": {
     "aws-sdk": "^2.348.0",
