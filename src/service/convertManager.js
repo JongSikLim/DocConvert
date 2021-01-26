@@ -9,7 +9,11 @@ import { BadRequest } from 'http-errors';
 
 const storage = new StorageManager();
 const outputPath = path.join(__dirname, '../output/');
-const libreOfficeClientDir = path.join(__dirname, '../../soffice.lnk');
+
+let libreOfficeClientDir =
+  process.NODE_ENV === 'development'
+    ? path.join(__dirname, '../../soffice.lnk')
+    : 'libreoffice';
 
 export default {
   /**
