@@ -5,7 +5,7 @@
           "script" : "babel-node ./bin/www",
           "watch" : true,
           "env": {
-              "NODE_ENV" : "production"
+              "NODE_ENV" : "prod"
           }
       }
   ]

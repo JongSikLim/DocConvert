@@ -11,7 +11,7 @@ const storage = new StorageManager();
 const outputPath = path.join(__dirname, '../output/');
 
 let libreOfficeClientDir =
-  process.NODE_ENV === 'development'
+  process.env.NODE_ENV === 'development'
     ? path.join(__dirname, '../../soffice.lnk')
     : 'libreoffice';
 
@@ -83,10 +83,12 @@ export default {
           reject(err);
         })
         .finally(() => {
-          let convertedFileDirectory = `${outputPath}\\${basename(
-            tempFilePath
-          )}\\`;
-          deleteTempFile([convertedFileDirectory, tempFilePath]);
+          let convertedFileDirectory = path.join(
+            outputPath,
+            basename(tempFilePath),
+            '/'
+          ); //변환한 png 파일 삭제
+          deleteTempFile([convertedFileDirectory, tempFilePath]); // 변환을 위해 제작한 원본 스트림 파일 삭제
         });
     });
   },
@@ -121,19 +123,23 @@ const deleteTempFile = (deletePathList = []) => {
 
 //SECTION MS OFFCIE TO PNG (xlsx, pptx, docx)
 const convertOffice = (filePath, format) => {
-  console.log('format: ', format);
   let command = `--headless --invisible --convert-to pdf *${format} --outdir`;
+  let output = path.join(outputPath, basename(filePath), '/'); //  디렉토리: output/<filename>/
+
+  console.log('output: ', output);
 
   return new Promise((resolve, reject) => {
     try {
       new Converter({
         files: [filePath],
-        output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
+        // output: `${outputPath}\\${basename(filePath)}\\`, //  디렉토리: output/<filename>/
         logLevel: 2,
         deletePdfFile: true,
         fileNameFormat: `page_%d`, // 디렉토리: output/<filename>/page_1
         documentConvert: `${libreOfficeClientDir} ${command}`,
+        output,
         callback: function (data) {
+          console.log('data.success[0]: ', data.success[0]);
           resolve(data.success[0]);
         },
       }).run();
